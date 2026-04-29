@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace E2k\CursorPaginationBundle\FilterExpression\ORM;
+
+use E2k\CursorPaginationBundle\FilterExpression\AbstractFilterExpression;
+use E2k\CursorPaginationBundle\FilterExpression\EvaluationResult;
+use E2k\CursorPaginationBundle\FilterExpression\FilterExpressionHandler;
+
+/**
+ * Handles: gt(value) → field > value
+ *
+ * @author Ernest kOUASSI <ernestkouassi02@gmail.com>
+ */
+class GtFilterExpression extends AbstractFilterExpression
+{
+    public function evaluate(object $queryBuilder, string $field, mixed $value, string $castType, int &$boundCounter): EvaluationResult
+    {
+        preg_match(self::getExpressionPattern(), $value, $matches);
+        $paramName = 'filter_gt_'.$boundCounter++;
+
+        return new EvaluationResult(
+            $queryBuilder->expr()->gt($field, ':'.$paramName),
+            [$paramName => FilterExpressionHandler::castValue($matches[1], $castType)],
+        );
+    }
+
+    protected static function getExpressionPattern(): string
+    {
+        return '#^gt\((.+)\)$#i';
+    }
+}
